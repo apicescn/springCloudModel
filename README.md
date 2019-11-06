@@ -1,7 +1,7 @@
 ### README
 
 
-   这是SpringCloudModel是作者初学SpringCloud的一个样例，集中包含了EUREKA单机配置与集群配置方法，Config配置服务中心的配置以及config-Client客户端的配置。
+   这是作者初学SpringCloud的一个样例，集中包含了EUREKA单机配置与集群配置方法，Config配置服务中心的配置以及config-Client客户端的配置。
    其中web-server是config-Client客户端应用,集成事件消息总线服务BUS，是一个典型的Web应用端。
    cloud-Ribbone为服务消费者与hystrix容错管理,断路器,延迟和故障服务的应用.
    集成了SpringCloud大部分的组件与子项目，同时数据库采用集成mongoDB与oracle11G结合。
