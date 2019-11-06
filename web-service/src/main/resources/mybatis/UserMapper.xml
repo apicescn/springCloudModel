@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.songshu.sls.mapper.UserMapper" >
+  <!--这里type=user使用的即是简名-->
+  <resultMap id="userMap" type="User">
+    <id column="ID" property="userId" jdbcType="VARCHAR" />
+    <result column="USERNAME" property="userName" jdbcType="VARCHAR" />
+    <result column="LOGINNAME" property="loginName" jdbcType="VARCHAR" />
+    <result column="LOGINPASS" property="loginPass" jdbcType="VARCHAR" />
+    <result column="MALE" property="male" jdbcType="CHAR" />
+    <result column="DEPTID" property="deptId" jdbcType="VARCHAR" />
+    <result column="DISABLED" property="disabled" jdbcType="CHAR" />
+    <result column="NICK" property="nick" jdbcType="VARCHAR" />
+    <result column="PORTRAIT" property="portrait" jdbcType="VARCHAR" />
+    <result column="STATUS" property="status" jdbcType="DECIMAL" />
+    <result column="IP" property="ip" jdbcType="VARCHAR" />
+    <result column="EXTDEPTID" property="extDeptId" jdbcType="VARCHAR" />
+    <result column="ISWORK" property="isWork" jdbcType="DECIMAL" />
+    <result column="SORT" property="sort" jdbcType="VARCHAR" />
+    <result column="ISMEMBER" property="isMember" jdbcType="CHAR" />
+    <result column="CREATE_DATE" property="createDate" jdbcType="TIMESTAMP" />
+    <result column="UPDATE_TIME" property="updateTime" jdbcType="TIMESTAMP" />
+    <result column="TJ" property="tj" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <resultMap id="userInfoMap" type="UserInfo" >
+    <id column="USERID" property="userId" jdbcType="VARCHAR" />
+    <result column="USERNAME" property="userName" jdbcType="VARCHAR" />
+    <result column="LOGINNAME" property="loginName" jdbcType="VARCHAR" />
+    <result column="LOGINPASS" property="password" jdbcType="VARCHAR" />
+    <result column="MALE" property="male" jdbcType="CHAR" />
+    <result column="DEPTID" property="deptId" jdbcType="VARCHAR" />
+    <result column="DISABLED" property="disabled" jdbcType="CHAR" />
+    <result column="STATUS" property="status" jdbcType="DECIMAL" />
+    <result column="PRIVDEPTID" property="privDeptId" jdbcType="VARCHAR" />
+    <result column="SORT" property="sort" jdbcType="VARCHAR" />
+    <result column="ISMEMBER" property="ismember" jdbcType="CHAR" />
+    <result column="PARENTDEPTID" property="parentDeptId" jdbcType="VARCHAR" />
+    <result column="PRIVDEPTNAME" property="privDeptName" jdbcType="VARCHAR" />
+    <result column="PRIVDEPTFULLNAME" property="privDeptFullName" jdbcType="VARCHAR" />
+    <result column="DEPTNAME" property="deptName" jdbcType="VARCHAR" />
+    <result column="DEPTFULLNAME" property="deptFullName" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="user_Column_List" >
+    ID, USERNAME, LOGINNAME, LOGINPASS, MALE, DEPTID, DISABLED, NICK, PORTRAIT, STATUS,
+    IP, EXTDEPTID, ISWORK, SORT, ISMEMBER, CREATE_DATE, UPDATE_TIME, TJ
+  </sql>
+  
+  <select id="getUserById" resultMap="userMap" parameterType="java.lang.String" >
+    select 
+    <include refid="user_Column_List" />
+    from T_SYS_USERS
+    where ID = #{id,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据角色id查找用户列表信息-->
+  <select id="getUserListByRoleId" resultMap="userInfoMap" parameterType="java.lang.String" >
+    SELECT T1.USERID,T2.USERNAME,T2.LOGINNAME,T2.MALE,T2.DEPTID,T3.DEPTNAME,T3.DEPTFULLNAME,T3.PID AS PARENTDEPTID,T2.DISABLED,T2.EXTDEPTID AS PRIVDEPTID,T2.SORT
+    	FROM T_SYS_USER_ROLE T1,T_SYS_USERS T2,T_SYS_ORGANISES T3 
+    		WHERE T1.USERID=T2.ID AND T2.DEPTID=T3.ID AND T1.RID=#{roleId,jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 根据工作组id查找用户列表信息-->
+  <select id="getUserListByGroupId" resultMap="userInfoMap" parameterType="java.lang.String" >
+    SELECT T1.USERID,T2.USERNAME,T2.LOGINNAME,T2.MALE,T2.DEPTID,T3.DEPTNAME,T3.DEPTFULLNAME,T3.PID AS PARENTDEPTID,T2.DISABLED,T2.EXTDEPTID AS PRIVDEPTID,T2.SORT
+    	FROM T_SYS_GROUP_USER T1,T_SYS_USERS T2,T_SYS_ORGANISES T3 
+    		WHERE T1.USERID=T2.ID AND T2.DEPTID=T3.ID AND T1.GID=#{groupId,jdbcType=VARCHAR}
+  </select>
+
+  <!--AND LOGINPASS = #{loginPass,jdbcType=VARCHAR}-->
+  <select id="login" resultType="int" parameterType="java.util.HashMap" >
+    select COUNT(1) exist
+    from T_SYS_USERS
+    where  (ID = #{loginName,jdbcType=VARCHAR} OR LOGINNAME=#{loginName,jdbcType=VARCHAR}) AND LOGINPASS = #{loginPass,jdbcType=VARCHAR}
+  </select>
+
+  <select id="isExistUserByLoginName" resultType="int" parameterType="java.lang.String" >
+    select COUNT(1) exist
+    from T_SYS_USERS
+    where LOGINNAME = #{loginName,jdbcType=VARCHAR}
+  </select>
+
+  <!-- 用户模块：用户登录获得UserInfo用户信息 -->
+	<select id="getUserInfoByUserId" resultMap="userInfoMap"  parameterType="java.lang.String" >
+	SELECT T1.ID AS USERID,T1.LOGINNAME,T1.LOGINPASS,T1.USERNAME,T1.MALE,T1.DISABLED,T1.SORT,T1.ISMEMBER,DECODE(T1.EXTDEPTID,NULL, DECODE(T1.DEPTID,'000000','100000',T1.DEPTID),t1.EXTDEPTID) AS PRIVDEPTID,T2.PID AS PARENTDEPTID,
+	 DECODE(T1.EXTDEPTID,NULL, DECODE(T1.DEPTID,'000000','三只松鼠股份有限公司',T2.DEPTNAME),T3.DEPTNAME) AS PRIVDEPTNAME,DECODE(T1.EXTDEPTID,NULL, DECODE(T1.DEPTID,'000000','三只松鼠股份有限公司',T2.DEPTFULLNAME),T3.DEPTFULLNAME) AS PRIVDEPTFULLNAME,
+	 DECODE(T1.DEPTID,'000000','100000',T1.DEPTID) AS DEPTID,DECODE(T1.DEPTID,'000000','三只松鼠股份有限公司',T2.DEPTNAME) AS DEPTNAME,DECODE(T1.DEPTID,'000000','三只松鼠股份有限公司',T2.DEPTFULLNAME) AS DEPTFULLNAME
+      FROM T_SYS_USERS T1,T_SYS_ORGANISES T2,T_SYS_ORGANISES T3
+    WHERE (T1.ID = #{userId,jdbcType=VARCHAR} OR T1.LOGINNAME=#{userId,jdbcType=VARCHAR}) AND T1.DEPTID = T2.ID AND T1.EXTDEPTID=T3.ID(+)
+	</select>
+	
+	<!--获取该部门下的用户列表 -->
+	<select id="getUserListByDepartmentId" resultMap="userMap" parameterType="java.lang.String" >
+    select 
+    <include refid="user_Column_List" />
+    from T_SYS_USERS
+    where DEPTID = #{deptId,jdbcType=VARCHAR} ORDER BY ID
+  </select>		
+	
+  <delete id="deleteUserById" parameterType="java.lang.String" >
+    delete from T_SYS_USERS
+    where ID = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <!-- 根据用户ID删除用户角色信息 -->
+  <delete id="deleteUserRoleByUserId" parameterType="java.lang.String" >
+    delete from T_SYS_USER_ROLE
+    where USERID = #{userId,jdbcType=VARCHAR} and rid != '-1'
+  </delete>
+ 
+ <!-- 新建用户的角色信息 -->
+ <insert id="insertUserRole" parameterType="java.util.HashMap">
+    insert into T_SYS_USER_ROLE (USERID, RID, FLAG)
+    values (#{userId,jdbcType=VARCHAR}, #{rid,jdbcType=VARCHAR}, #{flag,jdbcType=VARCHAR})
+  </insert>
+  
+  <insert id="insertUser" parameterType="User" >
+    insert into T_SYS_USERS (ID, USERNAME, LOGINNAME, 
+      LOGINPASS, MALE, DEPTID, 
+      DISABLED, NICK, PORTRAIT, 
+      STATUS, IP, EXTDEPTID, 
+      ISWORK, SORT, ISMEMBER, 
+      CREATE_DATE, UPDATE_TIME, TJ
+      )
+    values (#{id,jdbcType=VARCHAR}, #{userName,jdbcType=VARCHAR}, #{loginName,jdbcType=VARCHAR},
+      #{loginPass,jdbcType=VARCHAR}, #{male,jdbcType=CHAR}, #{deptId,jdbcType=VARCHAR},
+      #{disabled,jdbcType=CHAR}, #{nick,jdbcType=VARCHAR}, #{portrait,jdbcType=VARCHAR}, 
+      #{status,jdbcType=DECIMAL}, #{ip,jdbcType=VARCHAR}, #{extDeptId,jdbcType=VARCHAR},
+      #{isWork,jdbcType=DECIMAL}, #{sort,jdbcType=VARCHAR}, #{isMember,jdbcType=CHAR},
+      #{createDate,jdbcType=TIMESTAMP}, #{updateTime,jdbcType=TIMESTAMP}, #{tj,jdbcType=VARCHAR}
+      )
+  </insert>
+  
+  <insert id="insertUserSelective" parameterType="User" >
+    insert into T_SYS_USERS
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        ID,
+      </if>
+      <if test="username != null" >
+        USERNAME,
+      </if>
+      <if test="loginname != null" >
+        LOGINNAME,
+      </if>
+      <if test="loginpass != null" >
+        LOGINPASS,
+      </if>
+      <if test="male != null" >
+        MALE,
+      </if>
+      <if test="deptid != null" >
+        DEPTID,
+      </if>
+      <if test="disabled != null" >
+        DISABLED,
+      </if>
+      <if test="nick != null" >
+        NICK,
+      </if>
+      <if test="portrait != null" >
+        PORTRAIT,
+      </if>
+      <if test="status != null" >
+        STATUS,
+      </if>
+      <if test="ip != null" >
+        IP,
+      </if>
+      <if test="extdeptid != null" >
+        EXTDEPTID,
+      </if>
+      <if test="iswork != null" >
+        ISWORK,
+      </if>
+      <if test="sort != null" >
+        SORT,
+      </if>
+      <if test="ismember != null" >
+        ISMEMBER,
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE,
+      </if>
+      <if test="updateTime != null" >
+        UPDATE_TIME,
+      </if>
+      <if test="tj != null" >
+        TJ,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="username != null" >
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="loginname != null" >
+        #{loginName,jdbcType=VARCHAR},
+      </if>
+      <if test="loginpass != null" >
+        #{loginPass,jdbcType=VARCHAR},
+      </if>
+      <if test="male != null" >
+        #{male,jdbcType=CHAR},
+      </if>
+      <if test="deptid != null" >
+        #{deptId,jdbcType=VARCHAR},
+      </if>
+      <if test="disabled != null" >
+        #{disabled,jdbcType=CHAR},
+      </if>
+      <if test="nick != null" >
+        #{nick,jdbcType=VARCHAR},
+      </if>
+      <if test="portrait != null" >
+        #{portrait,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=DECIMAL},
+      </if>
+      <if test="ip != null" >
+        #{ip,jdbcType=VARCHAR},
+      </if>
+      <if test="extdeptid != null" >
+        #{extDeptId,jdbcType=VARCHAR},
+      </if>
+      <if test="iswork != null" >
+        #{isWork,jdbcType=DECIMAL},
+      </if>
+      <if test="sort != null" >
+        #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="ismember != null" >
+        #{isMember,jdbcType=CHAR},
+      </if>
+      <if test="createDate != null" >
+        #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="tj != null" >
+        #{tj,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  
+  <update id="updateUserByIdSelective" parameterType="User" >
+    update T_SYS_USERS
+    <set >
+      <if test="username != null" >
+        USERNAME = #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="loginname != null" >
+        LOGINNAME = #{loginName,jdbcType=VARCHAR},
+      </if>
+      <if test="loginpass != null" >
+        LOGINPASS = #{loginPass,jdbcType=VARCHAR},
+      </if>
+      <if test="male != null" >
+        MALE = #{male,jdbcType=CHAR},
+      </if>
+      <if test="deptid != null" >
+        DEPTID = #{deptId,jdbcType=VARCHAR},
+      </if>
+      <if test="disabled != null" >
+        DISABLED = #{disabled,jdbcType=CHAR},
+      </if>
+      <if test="nick != null" >
+        NICK = #{nick,jdbcType=VARCHAR},
+      </if>
+      <if test="portrait != null" >
+        PORTRAIT = #{portrait,jdbcType=VARCHAR},
+      </if>
+      <if test="status != null" >
+        STATUS = #{status,jdbcType=DECIMAL},
+      </if>
+      <if test="ip != null" >
+        IP = #{ip,jdbcType=VARCHAR},
+      </if>
+      <if test="extdeptid != null" >
+        EXTDEPTID = #{extDeptId,jdbcType=VARCHAR},
+      </if>
+      <if test="iswork != null" >
+        ISWORK = #{isWork,jdbcType=DECIMAL},
+      </if>
+      <if test="sort != null" >
+        SORT = #{sort,jdbcType=VARCHAR},
+      </if>
+      <if test="ismember != null" >
+        ISMEMBER = #{isMember,jdbcType=CHAR},
+      </if>
+      <if test="createDate != null" >
+        CREATE_DATE = #{createDate,jdbcType=TIMESTAMP},
+      </if>
+      <if test="updateTime != null" >
+        UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="tj != null" >
+        TJ = #{tj,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <update id="updateUserById" parameterType="User" >
+    update T_SYS_USERS
+    set USERNAME = #{userName,jdbcType=VARCHAR},
+      LOGINNAME = #{loginName,jdbcType=VARCHAR},
+      LOGINPASS = #{loginPass,jdbcType=VARCHAR},
+      MALE = #{male,jdbcType=CHAR},
+      DEPTID = #{deptId,jdbcType=VARCHAR},
+      DISABLED = #{disabled,jdbcType=CHAR},
+      NICK = #{nick,jdbcType=VARCHAR},
+      PORTRAIT = #{portrait,jdbcType=VARCHAR},
+      STATUS = #{status,jdbcType=DECIMAL},
+      IP = #{ip,jdbcType=VARCHAR},
+      EXTDEPTID = #{extDeptId,jdbcType=VARCHAR},
+      ISWORK = #{isWork,jdbcType=DECIMAL},
+      SORT = #{sort,jdbcType=VARCHAR},
+      ISMEMBER = #{isMember,jdbcType=CHAR},
+      CREATE_DATE = #{createDate,jdbcType=TIMESTAMP},
+      UPDATE_TIME = #{updateTime,jdbcType=TIMESTAMP},
+      TJ = #{tj,jdbcType=VARCHAR}
+    where ID = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

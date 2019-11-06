@@ -1,0 +1,73 @@
+#以下是单机eureka的配置方法，而本实例采用集群部署，故而以下注释，启用集群，其中---表示分隔三个集群配置文件，不可少！
+#server:
+#  port: 8080
+#
+#eureka:
+#  instance:
+#    hostname: localhost
+#  client:
+#    #表示是否注册自身到eureka服务器,因为当前这个应用就是eureka服务器,所以没必要注册自身
+#    register-with-eureka: false
+#    #fetchRegistry表示是否从eureka服务器获取注册信息
+#    fetch-registry: false
+#    serviceUrl:
+#      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+#
+
+#简单粗暴，关掉Eureka Server的自我保护模式。（不推荐,生产环境禁止使用）
+##eureka.client.healthcheck.enabled=true 开启Eureka的健康检查就可以实现Eureka服务的自动踢出，将已失效的服务踢出去。
+#  server:
+#    enable-self-preservation: true
+
+#默认就是true，故而无须设置
+#spring:
+#  cloud:
+#    config:
+#      discovery:
+#        enabled: true
+
+---
+spring:
+  application:
+    name: eureka-server
+  profiles: primary
+server:
+  port: 8082
+eureka:
+  instance:
+    hostname: primary
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://secondary:8083/eureka/,http://tertiary:8084/eureka/
+---
+spring:
+  application:
+    name: eureka-server
+  profiles: secondary
+server:
+  port: 8083
+eureka:
+  instance:
+    hostname: secondary
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://primary:8082/eureka/,http://tertiary:8084/eureka/
+---
+spring:
+  application:
+    name: eureka-server
+  profiles: tertiary
+server:
+  port: 8084
+eureka:
+  instance:
+    hostname: tertiary
+  client:
+    registerWithEureka: false
+    fetchRegistry: false
+    serviceUrl:
+      defaultZone: http://secondary:8083/eureka/,http://primary:8082/eureka/

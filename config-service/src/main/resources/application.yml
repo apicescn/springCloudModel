@@ -1,0 +1,56 @@
+server:
+  port: 8088
+
+#git地址信息配置
+#Spring Cloud Config也提供本地存储配置的方式。
+#我们只需要设置属性spring.profiles.active=native，Config Server会默认从应用的src/main/resource目录下检索配置文件。
+#也可以通过spring.cloud.config.server.native.searchLocations=file:F:/properties/属性来指定配置文件的位置。
+#虽然Spring Cloud Config提供了这样的功能，但是为了支持更好的管理内容和版本控制的功能，还是推荐使用git的方式。
+spring:
+  cloud:
+    config:
+      server:
+        git:
+          uri: https://git.oschina.net/apicescn/springCloudModel.git
+          # 也可以配置本地仓库
+          #spring.cloud.config.server.git.uri=file:///${user.home}/config-repo
+          searchPaths: config-repo
+          #如果是私有git仓库的话，可以设置用户名和密码
+#          username: username
+#          password: password
+          clone-on-start: true
+  # 开启本地配置
+#  profiles:
+#    active: native
+
+#kafka-其中defaultBrokerPort和defaultZkPort两个属性未配置，因服务器kafka端口使用默认端口故而无须设计。
+    stream:
+      kafka:
+        binder:
+          zk-nodes: 192.168.159.128:2181
+          brokers: 192.168.159.128:9092
+
+    bus:
+      trace:
+        enabled: true
+
+##启用用户密码认证（用户就是user）
+security:
+  basic:
+    enabled: true
+  user:
+    name: user
+    password: 123    
+
+#eureka服务注册
+eureka:
+  client:
+    healthcheck:
+      enabled: true   # 开启健康检查（依赖spring-boot-starter-actuator）
+    serviceUrl:
+      defaultZone: http://username:password@192.168.159.128:8082/eureka/,http://username:password@192.168.159.128:8083/eureka/,http://username:password@192.168.159.128:8084/eureka/
+  #eureka.instance.preferIpAddress参数设为true时，客户端在注册时就会使用自己的ip地址而不是主机名。（应在服务端设置）
+  instance:
+    preferIpAddress: true
+    lease-renewal-interval-in-seconds: 5      # 心跳时间，即服务续约间隔时间（缺省为30s）
+    lease-expiration-duration-in-seconds: 15  # 发呆时间，即服务续约到期时间（缺省为90s）

@@ -1,0 +1,10 @@
+.idea/
+*.iml
+target/
+/web-service/target
+/eureka-server/target
+/config-service/target
+/cloud-Ribbon/target
+/web-UI-Feign/target
+/zuul-Gateway/target
+

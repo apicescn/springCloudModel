@@ -1,0 +1,45 @@
+server:
+  port: 9000
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.159.128:8082/eureka/,http://192.168.159.128:8083/eureka/,http://192.168.159.128:8084/eureka/
+  instance:
+    preferIpAddress: true
+
+spring:
+  cloud:
+    config:
+      # 配置中心服务的地址(通过serviceId来获得配置中心服务地址，可省略url)
+      uri: http://192.168.159.128:8088/
+      #对应前配置文件中的{profile}部分
+      profile: ${config.profile:dev}
+      #对应前配置文件的git分支
+      label: master
+      # 要读取的配置文件application属性（对应前配置文件中的{application}部分）
+      name: web-service
+      password: 22113355
+      username: user
+
+      failFast: true
+      #discovery参数设置为true，开启通过服务来访问Config Server的功能
+      discovery:
+        enabled: true
+        #参数来指定Config Server注册的服务名
+#        serviceId: config-server
+
+#kafka
+    stream:
+      kafka:
+        binder:
+          zk-nodes: 192.168.159.128:2181
+          brokers: 192.168.159.128:9092
+
+    bus:
+      trace:
+        enabled:  true
+
+  application:
+    name: web-service
+

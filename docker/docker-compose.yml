@@ -1,0 +1,51 @@
+hystrix:
+  image: songshu/cloud-Hystrix
+  ports:
+   - "8030:8030"
+  links:
+   - ribbon
+   - discovery
+discovery:
+  primary:
+    image: songshu/eureka-server
+    ports:
+      - "8081:8081"
+      - "8082:8082"
+      - "8083:8083"
+configserver:
+  image: songshu/config-service
+  ports:
+   - "8088:8088"
+#  links:
+#   - discovery
+gateway:
+  image: songshu/zuul-Gateway
+  ports:
+   - "8090:8090"
+  links:
+#   - discovery
+   - configserver
+   - webservice
+   - ribbon
+   - feign
+webservice:
+  image: songshu/web-service
+  ports:
+       - "9000:9000"
+  links:
+#   - discovery
+   - configserver
+ribbon:
+  image: songshu/cloud-Ribbon
+  ports:
+     - "9001:9001"
+  links:
+#   - discovery
+   - configserver
+feign:
+  image: songshu/web-UI-Feign
+  ports:
+       - "9002:9002"
+  links:
+#   - discovery
+   - configserver

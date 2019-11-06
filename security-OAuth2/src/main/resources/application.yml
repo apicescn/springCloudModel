@@ -1,0 +1,31 @@
+spring:
+  application:
+    name: security-OAuth2
+server:
+  port: 8020
+
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://192.168.159.128:8081/eureka/,http://192.168.159.128:8082/eureka/,http://192.168.159.128:8083/eureka/
+
+security:
+  user:
+    password: user # 直接登录时的密码
+  ignored: /
+  sessions: never   # session策略
+  oauth2:
+    sso:
+      loginPath: /login   # 登录路径
+#    resource:
+#      loadBalanced: true #必须要有
+#      id: findUser
+#      user-info-uri: http://security-OAuth2:8020/oauth/findUser  # auth-server 是注册到eureka的服务名称
+    client:
+          client-id: caa900b0af4c7c448ad1
+          client-secret: b9bed043e67948127c53b2e8c99582094d3b8aa2
+          user-authorization-uri: https://github.com/login/oauth/access_token
+          access-token-uri: https://github.com/login/oauth/authorize
+    resource:
+      userInfoUri: https://api.github.com/user
+      preferTokenInfo: false
